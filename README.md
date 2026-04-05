@@ -76,7 +76,32 @@ Each upload is persisted with a generated `datasetId` and precomputed payloads f
 
 The frontend stores `datasetId` in local storage and automatically sends it with all GET calls.
 
+## Quick Start
 
+### Prerequisites
 
+- Python 3.12+
+- Node.js 18+
+- MongoDB running on localhost
 
+### 1) Run Backend
 
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn app.main:app --reload --port 8000
+```
+
+### 2) Run Frontend (open a new terminal in project root)
+
+```powershell
+npm install
+npm run start
+```
+
+### 3) Open App
+
+- http://localhost:3000
