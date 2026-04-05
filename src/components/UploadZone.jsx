@@ -77,7 +77,7 @@ const UploadZone = ({ file, isUploading, uploadStatus, error, onFileSelect, onUp
           Drag and drop your dataset here
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-          Upload CSV, XLS, or XLSX files and route them to the mocked `/upload` endpoint.
+          Upload CSV, XLS, or XLSX files and send them to the backend `/upload` endpoint.
         </Typography>
         <Button variant="outlined" sx={{ mt: 2.5 }}>
           Browse Files
@@ -133,3 +133,4 @@ const UploadZone = ({ file, isUploading, uploadStatus, error, onFileSelect, onUp
 };
 
 export default UploadZone;
+

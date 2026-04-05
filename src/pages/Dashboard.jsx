@@ -34,6 +34,11 @@ const emptyDashboard = {
   frequencyDistribution: [],
   segmentMix: [],
   summaryCards: [],
+  modelMeta: {
+    selectedAlgorithm: "unknown",
+    bestSilhouetteScore: 0,
+    candidateScores: [],
+  },
 };
 
 const kpiIcons = [
@@ -227,14 +232,23 @@ const Dashboard = () => {
                 <BubbleChartRoundedIcon color="secondary" />
                 <Box>
                   <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-                    Analysis pipeline ready
+                    Trained Model Summary
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Move to the results page to inspect cluster separation and optimal K
-                    selection.
+                    {`Selected: ${String(data.modelMeta?.selectedAlgorithm || "unknown").toUpperCase()} | Best silhouette: ${Number(data.modelMeta?.bestSilhouetteScore || 0).toFixed(2)}`}
                   </Typography>
                 </Box>
               </Stack>
+
+              {Array.isArray(data.modelMeta?.candidateScores) && data.modelMeta.candidateScores.length > 0 ? (
+                <Stack spacing={0.6} sx={{ mt: 1.5 }}>
+                  {data.modelMeta.candidateScores.map((candidate) => (
+                    <Typography key={candidate.algorithm} variant="caption" color="text.secondary">
+                      {`${candidate.algorithm.toUpperCase()}: silhouette ${Number(candidate.silhouetteScore || 0).toFixed(2)} | clusters ${candidate.clusterCount}`}
+                    </Typography>
+                  ))}
+                </Stack>
+              ) : null}
             </Paper>
           </Paper>
         </Grid>

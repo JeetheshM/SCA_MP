@@ -1,4 +1,4 @@
-﻿import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import TableChartRoundedIcon from "@mui/icons-material/TableChartRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
@@ -19,7 +19,7 @@ import { uploadDataset } from "../services/api";
 const uploadChecklist = [
   {
     title: "Accepted formats",
-    detail: "CSV, XLS, and XLSX inputs are ready for the mocked upload pipeline.",
+    detail: "CSV, XLS, and XLSX inputs are validated and sent to the FastAPI backend.",
     icon: TableChartRoundedIcon,
   },
   {
@@ -34,7 +34,7 @@ const uploadChecklist = [
   },
 ];
 
-// Upload page handles drag-drop selection and forwards files to the mock API layer.
+// Upload page handles drag-drop selection and forwards files to the backend API layer.
 const Upload = () => {
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
@@ -84,7 +84,7 @@ const Upload = () => {
       <PageHeader
         eyebrow="Data Ingestion"
         title="Upload fresh customer transaction data"
-        subtitle="Bring in a source file, validate the structure, and pass it to the mocked backend contract that the real ML pipeline can later consume."
+        subtitle="Bring in a source file, validate the structure, and send it to the backend inference pipeline for storage and analytics."
         chipLabel="POST /upload"
       />
 
@@ -104,7 +104,7 @@ const Upload = () => {
           <Paper sx={{ p: 2.8, height: "100%" }}>
             <Typography variant="h6">Upload workflow</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.8 }}>
-              This page is designed to feel production-ready while still working with mock services
+              This page posts files to the live backend contract and stores dataset context for analytics pages
               for your project demo.
             </Typography>
 
@@ -185,7 +185,7 @@ const Upload = () => {
               <Typography variant="h6">Need to inspect sample records first?</Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.8 }}>
                 The preview screen includes pagination, sorting, and missing-value highlighting for
-                the mock dataset.
+                the uploaded dataset.
               </Typography>
             </Box>
             <Button variant="text" onClick={() => navigate("/preview")}>
@@ -199,4 +199,5 @@ const Upload = () => {
 };
 
 export default Upload;
+
 

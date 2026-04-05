@@ -23,6 +23,17 @@ const emptyInsights = {
   highlights: [],
   recommendations: [],
   opportunityAreas: [],
+  trainedModelSummary: {
+    selectedAlgorithm: "unknown",
+    bestSilhouetteScore: 0,
+    candidateScores: [],
+  },
+  customerRiskSnapshot: {
+    highRiskCustomers: 0,
+    inactiveCustomers: 0,
+    totalCustomers: 0,
+    clusters: [],
+  },
 };
 
 // Insights page translates model output into business actions and talking points.
@@ -150,12 +161,29 @@ const Insights = () => {
                 background: "linear-gradient(135deg, rgba(37,99,235,0.12), rgba(15,118,110,0.12))",
               }}
             >
-              <Stack direction="row" spacing={1.2} alignItems="center">
-                <LightbulbRoundedIcon color="warning" />
+              <Stack spacing={1.1}>
+                <Stack direction="row" spacing={1.2} alignItems="center">
+                  <LightbulbRoundedIcon color="warning" />
+                  <Typography variant="body2" color="text.secondary">
+                    {`Model used ${String(data.trainedModelSummary?.selectedAlgorithm || "unknown").toUpperCase()} with best silhouette ${Number(data.trainedModelSummary?.bestSilhouetteScore || 0).toFixed(2)}.`}
+                  </Typography>
+                </Stack>
                 <Typography variant="body2" color="text.secondary">
-                  Pair these recommendations with live filtering on the segments page to make your
-                  project demo feel interactive and evidence-driven.
+                  {`High-risk customers: ${data.customerRiskSnapshot?.highRiskCustomers || 0} / ${data.customerRiskSnapshot?.totalCustomers || 0}`}
                 </Typography>
+                {Array.isArray(data.customerRiskSnapshot?.clusters) && data.customerRiskSnapshot.clusters.length > 0 ? (
+                  <Stack spacing={0.5}>
+                    {data.customerRiskSnapshot.clusters.map((cluster) => (
+                      <Typography
+                        key={`${cluster.cluster}-${cluster.segment}`}
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        {`${cluster.cluster} (${cluster.segment}): ${cluster.customers} customers`}
+                      </Typography>
+                    ))}
+                  </Stack>
+                ) : null}
               </Stack>
             </Paper>
           </Paper>

@@ -5,6 +5,7 @@ import SpeedRoundedIcon from "@mui/icons-material/SpeedRounded";
 import {
   alpha,
   Box,
+  Chip,
   Grid,
   LinearProgress,
   Paper,
@@ -45,6 +46,11 @@ const emptyResults = {
   scatterData: [],
   elbowMethod: [],
   clusterProfiles: [],
+  modelMeta: {
+    selectedAlgorithm: "unknown",
+    bestSilhouetteScore: 0,
+    candidateScores: [],
+  },
 };
 
 // Analysis page explains how the clustering model behaved and how the clusters look.
@@ -83,6 +89,38 @@ const Results = () => {
       />
 
       <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Paper
+            sx={{
+              p: 2.4,
+              background:
+                "linear-gradient(135deg, rgba(15,118,110,0.12), rgba(37,99,235,0.10), rgba(249,115,22,0.08))",
+            }}
+          >
+            <Typography variant="subtitle2" color="text.secondary">
+              Trained Model Summary
+            </Typography>
+            <Typography variant="h6" sx={{ mt: 0.6 }}>
+              {`Selected algorithm: ${String(data.modelMeta?.selectedAlgorithm || "unknown").toUpperCase()}`}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.6 }}>
+              {`Best silhouette score: ${Number(data.modelMeta?.bestSilhouetteScore || 0).toFixed(2)}`}
+            </Typography>
+
+            {Array.isArray(data.modelMeta?.candidateScores) && data.modelMeta.candidateScores.length > 0 ? (
+              <Stack direction="row" spacing={1.5} sx={{ mt: 1.5, flexWrap: "wrap" }} useFlexGap>
+                {data.modelMeta.candidateScores.map((candidate) => (
+                  <Chip
+                    key={candidate.algorithm}
+                    label={`${candidate.algorithm.toUpperCase()} ${Number(candidate.silhouetteScore || 0).toFixed(2)}`}
+                    variant="outlined"
+                  />
+                ))}
+              </Stack>
+            ) : null}
+          </Paper>
+        </Grid>
+
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2.5, height: "100%" }}>
             <Stack direction="row" spacing={1.4} alignItems="center">

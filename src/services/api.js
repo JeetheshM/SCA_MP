@@ -1,68 +1,24 @@
 import axios from "axios";
-import MockAdapter from "axios-mock-adapter";
-import {
-  analysisResults,
-  clusteringOutput,
-  dashboardData,
-  insightsData,
-  previewData,
-} from "../utils/mockData";
-import { getUploadMeta, saveUploadMeta } from "../utils/storage";
+import { getDatasetId, saveDatasetContext, saveUploadMeta } from "../utils/storage";
 
-// Axios instance mirrors a real backend client, while the mock adapter keeps the UI runnable now.
 const api = axios.create({
-  baseURL: "https://mock-cbpa.local",
-  timeout: 5000,
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
+  timeout: 15000,
 });
 
-const mock = new MockAdapter(api, {
-  delayResponse: 850,
-});
+const getRequestConfigWithDataset = () => {
+  const datasetId = getDatasetId();
 
-let mocksInitialized = false;
-
-const initializeMocks = () => {
-  if (mocksInitialized) {
-    return;
+  if (!datasetId) {
+    return {};
   }
 
-  mock.onPost("/upload").reply(() => {
-    const uploadMeta = getUploadMeta();
-
-    return [
-      200,
-      {
-        success: true,
-        message: "Dataset uploaded and queued for analysis.",
-        uploadMeta,
-        preview: {
-          rows: previewData.rows.length,
-          columns: previewData.columns.length,
-        },
-      },
-    ];
-  });
-
-  mock.onGet("/preview").reply(200, {
-    ...previewData,
-    uploadMeta: getUploadMeta(),
-  });
-
-  mock.onGet("/dashboard").reply(200, {
-    ...dashboardData,
-    uploadMeta: getUploadMeta(),
-  });
-
-  mock.onGet("/analyze").reply(200, analysisResults);
-
-  mock.onGet("/results").reply(200, clusteringOutput);
-
-  mock.onGet("/insights").reply(200, insightsData);
-
-  mocksInitialized = true;
+  return {
+    params: {
+      datasetId,
+    },
+  };
 };
-
-initializeMocks();
 
 export const uploadDataset = async (file) => {
   saveUploadMeta(file);
@@ -76,30 +32,35 @@ export const uploadDataset = async (file) => {
     },
   });
 
+  saveDatasetContext({
+    datasetId: data?.datasetId,
+    uploadMeta: data?.uploadMeta,
+  });
+
   return data;
 };
 
 export const getPreviewData = async () => {
-  const { data } = await api.get("/preview");
+  const { data } = await api.get("/preview", getRequestConfigWithDataset());
   return data;
 };
 
 export const getDashboardData = async () => {
-  const { data } = await api.get("/dashboard");
+  const { data } = await api.get("/dashboard", getRequestConfigWithDataset());
   return data;
 };
 
 export const getAnalysisResults = async () => {
-  const { data } = await api.get("/analyze");
+  const { data } = await api.get("/analyze", getRequestConfigWithDataset());
   return data;
 };
 
 export const getClusteringOutput = async () => {
-  const { data } = await api.get("/results");
+  const { data } = await api.get("/results", getRequestConfigWithDataset());
   return data;
 };
 
 export const getInsightsData = async () => {
-  const { data } = await api.get("/insights");
+  const { data } = await api.get("/insights", getRequestConfigWithDataset());
   return data;
 };
