@@ -69,27 +69,44 @@ Place your trained artifacts in `backend/models/`:
 If artifacts are not present, backend uses a deterministic heuristic segmentation fallback so the UI still works.
 
 
-Quick Start
-
-Prerequisites
-Python 3.12+, Node.js 18+, MongoDB running locally.
-
-Install and run backend
-
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env
-uvicorn app.main:app --reload --port 8000
-Install and run frontend (new terminal, project root)
-npm install
-npm run start
-Open app
-http://localhost:3000
 
 ## MongoDB Storage
 
 Each upload is persisted with a generated `datasetId` and precomputed payloads for preview, dashboard, analysis, results, and insights.
 
 The frontend stores `datasetId` in local storage and automatically sends it with all GET calls.
+
+
+
+
+Use this exact README-friendly format so commands stay on separate lines:
+
+## Quick Start
+
+### 1. Prerequisites
+- Python 3.12 or later
+- Node.js 18 or later
+- MongoDB running locally
+
+### 2. Run Backend
+1. Open terminal in project folder
+2. Run:
+
+    cd backend
+    python -m venv .venv
+    .venv\Scripts\activate
+    pip install -r requirements.txt
+    copy .env.example .env
+    uvicorn app.main:app --reload --port 8000
+
+### 3. Run Frontend (new terminal)
+1. Open another terminal in project root
+2. Run:
+
+    npm install
+    npm run start
+
+### 4. Open App
+- http://localhost:3000
+
+If you want, I can also give the same section in Linux/macOS command format.
