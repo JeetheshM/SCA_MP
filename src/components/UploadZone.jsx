@@ -6,7 +6,18 @@ import { useRef, useState } from "react";
 const acceptedFormats = ".csv,.xls,.xlsx";
 
 // Drag-and-drop upload area with click-to-browse support.
-const UploadZone = ({ file, isUploading, uploadStatus, error, onFileSelect, onUpload }) => {
+const UploadZone = ({
+  file,
+  isUploading,
+  uploadStatus,
+  error,
+  onFileSelect,
+  onUpload,
+  endpointLabel = "/upload",
+  title = "Drag and drop your dataset here",
+  description = "Upload CSV, XLS, or XLSX files and send them to the backend endpoint.",
+  uploadButtonLabel = "Upload Dataset",
+}) => {
   const theme = useTheme();
   const inputRef = useRef(null);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -74,10 +85,10 @@ const UploadZone = ({ file, isUploading, uploadStatus, error, onFileSelect, onUp
         </Box>
 
         <Typography variant="h5" sx={{ mt: 2.2 }}>
-          Drag and drop your dataset here
+          {title}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-          Upload CSV, XLS, or XLSX files and send them to the backend `/upload` endpoint.
+          {description} <strong>{endpointLabel}</strong>.
         </Typography>
         <Button variant="outlined" sx={{ mt: 2.5 }}>
           Browse Files
@@ -109,7 +120,7 @@ const UploadZone = ({ file, isUploading, uploadStatus, error, onFileSelect, onUp
             </Box>
 
             <Button variant="contained" onClick={onUpload} disabled={isUploading}>
-              {isUploading ? "Uploading..." : "Upload Dataset"}
+              {isUploading ? "Uploading..." : uploadButtonLabel}
             </Button>
           </Stack>
         ) : null}

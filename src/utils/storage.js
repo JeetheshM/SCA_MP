@@ -1,11 +1,12 @@
 const STORAGE_KEY = "cbpa-upload-context";
+const PRODUCT_STORAGE_KEY = "cbpa-product-upload-context";
 
-const getStoredContext = () => {
+const getStoredContext = (key = STORAGE_KEY) => {
   if (typeof window === "undefined") {
     return null;
   }
 
-  const rawValue = window.localStorage.getItem(STORAGE_KEY);
+  const rawValue = window.localStorage.getItem(key);
 
   if (!rawValue) {
     return null;
@@ -18,12 +19,12 @@ const getStoredContext = () => {
   }
 };
 
-const persistContext = (nextContext) => {
+const persistContext = (nextContext, key = STORAGE_KEY) => {
   if (typeof window === "undefined") {
     return null;
   }
 
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextContext));
+  window.localStorage.setItem(key, JSON.stringify(nextContext));
   return nextContext;
 };
 
@@ -38,7 +39,7 @@ export const saveUploadMeta = (file) => {
     return null;
   }
 
-  const existing = getStoredContext() || {};
+  const existing = getStoredContext(STORAGE_KEY) || {};
   const uploadMeta = {
     fileName: file.name,
     size: file.size,
@@ -46,10 +47,13 @@ export const saveUploadMeta = (file) => {
     uploadedAt: new Date().toISOString(),
   };
 
-  persistContext({
+  persistContext(
+    {
     ...existing,
     uploadMeta,
-  });
+    },
+    STORAGE_KEY
+  );
 
   return uploadMeta;
 };
@@ -59,13 +63,16 @@ export const saveDatasetContext = ({ datasetId, uploadMeta }) => {
     return null;
   }
 
-  const existing = getStoredContext() || {};
+  const existing = getStoredContext(STORAGE_KEY) || {};
 
-  return persistContext({
-    ...existing,
-    datasetId: datasetId || existing.datasetId || null,
-    uploadMeta: uploadMeta || existing.uploadMeta || null,
-  });
+  return persistContext(
+    {
+      ...existing,
+      datasetId: datasetId || existing.datasetId || null,
+      uploadMeta: uploadMeta || existing.uploadMeta || null,
+    },
+    STORAGE_KEY
+  );
 };
 
 export const clearUploadContext = () => {
@@ -74,4 +81,59 @@ export const clearUploadContext = () => {
   }
 
   window.localStorage.removeItem(STORAGE_KEY);
+};
+
+export const getProductUploadContext = () => getStoredContext(PRODUCT_STORAGE_KEY);
+
+export const getProductUploadMeta = () => getStoredContext(PRODUCT_STORAGE_KEY)?.uploadMeta || null;
+
+export const getProductDatasetId = () => getStoredContext(PRODUCT_STORAGE_KEY)?.datasetId || null;
+
+export const saveProductUploadMeta = (file) => {
+  if (typeof window === "undefined" || !file) {
+    return null;
+  }
+
+  const existing = getStoredContext(PRODUCT_STORAGE_KEY) || {};
+  const uploadMeta = {
+    fileName: file.name,
+    size: file.size,
+    type: file.type || "application/octet-stream",
+    uploadedAt: new Date().toISOString(),
+  };
+
+  persistContext(
+    {
+      ...existing,
+      uploadMeta,
+    },
+    PRODUCT_STORAGE_KEY
+  );
+
+  return uploadMeta;
+};
+
+export const saveProductDatasetContext = ({ datasetId, uploadMeta }) => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const existing = getStoredContext(PRODUCT_STORAGE_KEY) || {};
+
+  return persistContext(
+    {
+      ...existing,
+      datasetId: datasetId || existing.datasetId || null,
+      uploadMeta: uploadMeta || existing.uploadMeta || null,
+    },
+    PRODUCT_STORAGE_KEY
+  );
+};
+
+export const clearProductUploadContext = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(PRODUCT_STORAGE_KEY);
 };

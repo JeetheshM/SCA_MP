@@ -10,11 +10,13 @@ This project now includes:
 The frontend expects and consumes these endpoints:
 
 - `POST /upload`
+- `POST /upload-product`
 - `GET /preview?datasetId=...`
 - `GET /dashboard?datasetId=...`
 - `GET /analyze?datasetId=...`
 - `GET /results?datasetId=...`
 - `GET /insights?datasetId=...`
+- `GET /product-analysis?datasetId=...&forecastPeriods=12&frequency=auto`
 
 ## Backend Setup (FastAPI + MongoDB)
 

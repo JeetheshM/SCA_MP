@@ -6,6 +6,8 @@ import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import TableViewRoundedIcon from "@mui/icons-material/TableViewRounded";
 import BubbleChartRoundedIcon from "@mui/icons-material/BubbleChartRounded";
 import HubRoundedIcon from "@mui/icons-material/HubRounded";
+import CategoryRoundedIcon from "@mui/icons-material/CategoryRounded";
+import QueryStatsRoundedIcon from "@mui/icons-material/QueryStatsRounded";
 
 export const navigationItems = [
   {
@@ -19,6 +21,18 @@ export const navigationItems = [
     path: "/upload",
     icon: CloudUploadRoundedIcon,
     description: "Add fresh datasets",
+  },
+  {
+    label: "Product Upload",
+    path: "/upload-product",
+    icon: CategoryRoundedIcon,
+    description: "Store product datasets",
+  },
+  {
+    label: "Product Analysis",
+    path: "/product-analysis",
+    icon: QueryStatsRoundedIcon,
+    description: "Demand and forecasting",
   },
   {
     label: "Data Preview",
@@ -65,6 +79,14 @@ const routeDetails = {
     title: "Upload Dataset",
     subtitle: "Push CSV or Excel files into the analysis workflow.",
   },
+  "/upload-product": {
+    title: "Product Upload",
+    subtitle: "Store product files in a separate dataset context.",
+  },
+  "/product-analysis": {
+    title: "Product Analysis",
+    subtitle: "Analyze sales, movement clusters, demand trends, and forecasts.",
+  },
   "/preview": {
     title: "Data Preview",
     subtitle: "Review data quality, missing values, and record-level details.",
@@ -97,4 +119,3 @@ export const landingQuickLinks = [
   { label: "Platform Overview", path: "/", icon: HomeRoundedIcon },
   ...navigationItems,
 ];
-

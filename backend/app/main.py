@@ -22,6 +22,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup() -> None:
+    settings.preprocessing_output_dir.mkdir(parents=True, exist_ok=True)
     mongo_client, repository = initialize_repository(settings)
     app.state.mongo_client = mongo_client
     app.state.dataset_repository = repository

@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
 import Landing from "./pages/Landing";
 import Preview from "./pages/Preview";
+import ProductAnalysis from "./pages/ProductAnalysis";
+import ProductUpload from "./pages/ProductUpload";
 import Results from "./pages/Results";
 import Segments from "./pages/Segments";
 import Upload from "./pages/Upload";
@@ -27,6 +29,8 @@ const App = () => {
           <Route element={<AppLayout mode={mode} onToggleTheme={toggleMode} />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/upload" element={<Upload />} />
+            <Route path="/upload-product" element={<ProductUpload />} />
+            <Route path="/product-analysis" element={<ProductAnalysis />} />
             <Route path="/preview" element={<Preview />} />
             <Route path="/results" element={<Results />} />
             <Route path="/segments" element={<Segments />} />

@@ -4,8 +4,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 
+from ..config import settings
 from ..services.data_preprocessing import InputPreprocessor
 from ..services.inference import run_segmentation
 from ..services.insights import (
@@ -15,9 +16,28 @@ from ..services.insights import (
     build_preview_payload,
     build_results_payload,
 )
-from ..services.preprocess import SUPPORTED_EXTENSIONS, build_customer_frame, read_tabular_file
+from ..services.pipeline_config import EncodingStrategy, PipelineConfig, ScalingMethod
+from ..services.preprocess import (
+    SUPPORTED_EXTENSIONS,
+    build_customer_frame,
+    to_serializable_records,
+)
+from ..services.universal_preprocessing import UniversalPreprocessor
 
 router = APIRouter(tags=["upload"])
+
+
+def _parse_scaling_method(raw_value: str) -> ScalingMethod:
+    normalized = (raw_value or "").strip().lower()
+    for method in ScalingMethod:
+        if method.value == normalized:
+            return method
+
+    supported_methods = ", ".join(method.value for method in ScalingMethod)
+    raise HTTPException(
+        status_code=400,
+        detail=f"Invalid scaling_method. Supported values: {supported_methods}.",
+    )
 
 
 @router.post("/upload")
@@ -87,6 +107,7 @@ async def upload_dataset(request: Request, file: UploadFile = File(...)) -> dict
 
     dataset_document = {
         "datasetId": dataset_id,
+        "datasetType": "customer",
         "createdAt": datetime.now(timezone.utc),
         "uploadMeta": upload_meta,
         "quality": quality,
@@ -111,4 +132,113 @@ async def upload_dataset(request: Request, file: UploadFile = File(...)) -> dict
             "columns": quality["totalColumns"],
         },
         "modelMeta": inference_result.model_meta,
+    }
+
+
+@router.post("/upload-product")
+async def upload_product_dataset(
+    request: Request,
+    file: UploadFile = File(...),
+    scaling_method: str = Form("standard"),
+    use_binary_label_encoding: bool = Form(True),
+) -> dict:
+    file_name = file.filename or ""
+    extension = Path(file_name).suffix.lower()
+
+    if extension not in SUPPORTED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only CSV, XLS, and XLSX files are supported.")
+
+    file_bytes = await file.read()
+    dataset_id = str(uuid4())
+
+    try:
+        pipeline_config = PipelineConfig(
+            scaling_method=_parse_scaling_method(scaling_method),
+            encoding_strategy=EncodingStrategy.ONE_HOT,
+            binary_encoding_strategy=(
+                EncodingStrategy.LABEL if use_binary_label_encoding else None
+            ),
+            handle_duplicates=True,
+            handle_missing_values=True,
+            engineer_features=True,
+            datetime_feature_extraction=True,
+        )
+        preprocessor = UniversalPreprocessor(config=pipeline_config)
+        preprocessing_result = preprocessor.preprocess_uploaded_file(
+            file_name=file_name,
+            file_bytes=file_bytes,
+            output_dir=settings.preprocessing_output_dir,
+            dataset_name=f"{Path(file_name).stem}_{dataset_id[:8]}",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:  # pragma: no cover - defensive API error handling
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to preprocess uploaded dataset. Please verify file contents and retry.",
+        ) from exc
+
+    upload_meta = {
+        "fileName": file_name,
+        "size": file.size if file.size is not None else len(file_bytes),
+        "type": file.content_type or "application/octet-stream",
+        "uploadedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+
+    dataset_document = {
+        "datasetId": dataset_id,
+        "datasetType": "product",
+        "createdAt": datetime.now(timezone.utc),
+        "uploadMeta": upload_meta,
+        "productData": {
+            "rows": int(preprocessing_result.report.original_shape[0]),
+            "columns": int(preprocessing_result.report.original_shape[1]),
+            "columnNames": [str(column) for column in preprocessing_result.cleaned_frame.columns],
+            "processedColumnNames": [
+                str(column) for column in preprocessing_result.processed_frame.columns
+            ],
+            "cleanedPreviewRecords": to_serializable_records(
+                preprocessing_result.cleaned_frame.head(50)
+            ),
+            "processedPreviewRecords": to_serializable_records(
+                preprocessing_result.processed_frame.head(50)
+            ),
+            "preprocessingReport": preprocessing_result.report.to_dict(),
+            "artifactPaths": {
+                "cleanedFilePath": str(preprocessing_result.cleaned_file_path),
+                "processedFilePath": str(preprocessing_result.processed_file_path),
+                "pipelineFilePath": str(preprocessing_result.pipeline_file_path),
+                "reportFilePath": str(preprocessing_result.report_file_path),
+            },
+        },
+    }
+
+    repository = request.app.state.dataset_repository
+    repository.save_dataset(dataset_document)
+
+    return {
+        "success": True,
+        "message": "Product dataset uploaded, preprocessed, and stored successfully.",
+        "datasetId": dataset_id,
+        "uploadMeta": upload_meta,
+        "preview": {
+            "rows": int(preprocessing_result.processed_frame.shape[0]),
+            "columns": int(preprocessing_result.processed_frame.shape[1]),
+        },
+        "preprocessingSummary": {
+            "duplicatesRemoved": preprocessing_result.report.duplicate_rows_removed,
+            "missingValuesHandled": preprocessing_result.report.missing_values_filled_count,
+            "encodedColumns": sorted(preprocessing_result.report.encoded_columns.keys()),
+            "scaledColumns": preprocessing_result.report.scaled_columns,
+            "engineeredFeatures": preprocessing_result.report.engineered_features,
+            "scalingMethod": preprocessing_result.report.scaling_method,
+        },
+        "artifactPaths": {
+            "cleanedFilePath": str(preprocessing_result.cleaned_file_path),
+            "processedFilePath": str(preprocessing_result.processed_file_path),
+            "pipelineFilePath": str(preprocessing_result.pipeline_file_path),
+            "reportFilePath": str(preprocessing_result.report_file_path),
+        },
     }

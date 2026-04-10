@@ -20,9 +20,28 @@ class DatasetRepository:
             upsert=True,
         )
 
-    def get_dataset(self, dataset_id: str | None = None) -> dict[str, Any] | None:
+    def get_dataset(
+        self,
+        dataset_id: str | None = None,
+        dataset_type: str | None = None,
+    ) -> dict[str, Any] | None:
+        query: dict[str, Any] = {}
+
         if dataset_id:
-            document = self.collection.find_one({"datasetId": dataset_id})
+            query["datasetId"] = dataset_id
+
+        if dataset_type == "customer":
+            # Backward compatibility: older customer uploads may not have datasetType.
+            query["$or"] = [
+                {"datasetType": "customer"},
+                {"datasetType": {"$exists": False}},
+                {"datasetType": None},
+            ]
+        elif dataset_type:
+            query["datasetType"] = dataset_type
+
+        if query:
+            document = self.collection.find_one(query, sort=[("createdAt", DESCENDING)])
         else:
             document = self.collection.find_one(sort=[("createdAt", DESCENDING)])
 

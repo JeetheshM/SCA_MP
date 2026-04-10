@@ -14,10 +14,12 @@ class Settings:
     cors_origins: list[str]
     models_dir: Path
     model_version: str
+    preprocessing_output_dir: Path
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = BASE_DIR / "models"
+PREPROCESSING_OUTPUT_DIR = BASE_DIR / "preprocessing_outputs"
 
 
 def _parse_cors_origins(raw_value: str) -> list[str]:
@@ -33,4 +35,7 @@ settings = Settings(
     cors_origins=_parse_cors_origins(os.getenv("CORS_ORIGINS", "http://localhost:3000")),
     models_dir=MODELS_DIR,
     model_version=os.getenv("MODEL_VERSION", "v1"),
+    preprocessing_output_dir=Path(
+        os.getenv("PREPROCESSING_OUTPUT_DIR", str(PREPROCESSING_OUTPUT_DIR))
+    ),
 )
