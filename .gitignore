@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+*.log
+
+# Backend
+backend/.env
+backend/__pycache__/
+backend/**/*.pyc
+backend/preprocessing_outputs/
